@@ -37,6 +37,49 @@ jobs:
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require --no-interaction wp-coding-standards/wpcs:^3 phpcompatibility/phpcompatibility-wp:"*"
       - name: WordPress Coding Standards
-        run: ~/.composer/vendor/bin/phpcs --standard=WordPress --extensions=php --ignore=vendor .
+        run: ~/.composer/vendor/bin/phpcs --standard=WordPress --extensions=php --ignore=vendor,tests .
       - name: PHP 7.4+ compatibility
         run: ~/.composer/vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4- --extensions=php --ignore=vendor .
+
+  integration:
+    name: Integration tests (${{ matrix.storage }}, PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        storage: [legacy, hpos]
+        php: ['8.1', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Prepare blueprint
+        run: |
+          HPOS=$([ "${{ matrix.storage }}" = "hpos" ] && echo yes || echo no)
+          sed -e "s/\"php\": \"8.3\"/\"php\": \"${{ matrix.php }}\"/" \
+              -e "s/custom_orders_table_enabled', 'no'/custom_orders_table_enabled', '$HPOS'/" \
+              tests/blueprint.json > tests/blueprint.ci.json
+      - name: Run tests in WordPress Playground (WordPress + WooCommerce latest)
+        run: |
+          npx -y @wp-playground/cli@3.1.55 run-blueprint \
+            --blueprint=tests/blueprint.ci.json \
+            --mount=.:/wordpress/wp-content/plugins/simple-profit-calculator-for-woocommerce \
+            --mount=./tests:/tests
+      - name: Results
+        if: always()
+        run: cat tests/results.txt && grep -q "PASSED" tests/results.txt
+
+  plugin-check:
+    name: WordPress.org Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the distributable plugin (same files as the release zip)
+        run: |
+          mkdir -p dist/simple-profit-calculator-for-woocommerce
+          rsync -a --exclude-from=.distignore --exclude=dist ./ dist/simple-profit-calculator-for-woocommerce/
+      - uses: WordPress/plugin-check-action@v1.1.9
+        with:
+          build-dir: dist/simple-profit-calculator-for-woocommerce
+          slug: simple-profit-calculator-for-woocommerce

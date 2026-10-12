@@ -13,3 +13,8 @@ README.md
 CONTRIBUTING.md
 SECURITY.md
 *.zip
+tests
+docs
+CHANGELOG.md
+dist
+.wordpress-org

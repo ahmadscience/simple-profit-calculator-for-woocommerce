@@ -4,7 +4,7 @@ Tags: woocommerce, profit, cost of goods, reports, accounting
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,6 +41,7 @@ For every month it takes your WooCommerce sales, subtracts refunds and tax, and 
 
 * Report bugs and request features on [GitHub Issues](https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/issues).
 * Report security vulnerabilities **privately** through [GitHub security advisories](https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/security/advisories/new). Please don't post them in public issues or the support forum.
+* Full documentation: [user guide](https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/blob/main/docs/user-guide.md), [developer guide with filters](https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/blob/main/docs/developer.md), [security model](https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/blob/main/docs/security.md).
 * Source code and development happen on [GitHub](https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce).
 
 = Privacy =
@@ -93,7 +94,27 @@ On [GitHub Issues](https://github.com/ahmadscience/simple-profit-calculator-for-
 
 It is kept unless you tick "Delete all … when the plugin is deleted" under Settings → Data.
 
+== Screenshots ==
+
+1. Monthly profit: net sales, every cost and the result, with costs for the month editable on the right.
+2. Yearly overview: every month side by side, with totals. Export it as CSV with one click.
+3. Monthly costs: enter a whole year of costs and save once. Copy last month's costs with one click.
+4. Settings: choose how product costs are found and enter the fees each payment method charges.
+5. The "Cost price" field added to products when no Cost of Goods plugin is installed.
+
 == Changelog ==
+
+= 2.0.1 =
+* Security: only administrators can enable "delete data on uninstall" (Shop Managers could before).
+* Security: the one-time import from version 1 now only runs when the version 1 table is really present, and only for logged-in users who can use the plugin.
+* Security: stronger protection against spreadsheet formula injection in CSV exports; CSV download sends a nosniff header.
+* Security: limits on note length, number of cost types and payment methods, and amount size.
+* Fixed: on multisite, uninstall now cleans up every site that opted in.
+* Fixed: two simultaneous saves of the same month could fail.
+* Fixed: outdated cached data is now removed from the database instead of waiting to expire.
+* Improved: lower memory use on stores with many orders.
+* Improved: declares compatibility with the Cart & Checkout blocks.
+* Developers: new filters spcw_product_unit_cost, spcw_order_statuses and spcw_month_result.
 
 = 2.0.0 =
 * Complete rewrite for public release.
@@ -111,6 +132,9 @@ It is kept unless you tick "Delete all … when the plugin is deleted" under Set
 * Data from version 1 ("Profit Calculator") is imported automatically.
 
 == Upgrade Notice ==
+
+= 2.0.1 =
+Security hardening. Recommended for all users.
 
 = 2.0.0 =
 Major update. Your existing monthly costs and settings are imported automatically from version 1.

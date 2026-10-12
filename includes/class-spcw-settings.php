@@ -22,6 +22,13 @@ class SPCW_Settings {
 	/** Key of the expense category used for the shipping-margin calculation. */
 	const SHIPPING_CATEGORY = 'shipping';
 
+	/** Input limits (defence against oversized or abusive submissions). */
+	const MAX_AMOUNT      = 9999999999.99;
+	const MAX_CATEGORIES  = 50;
+	const MAX_GATEWAYS    = 100;
+	const MAX_NOTE_CHARS  = 1000;
+	const MAX_LABEL_CHARS = 60;
+
 	/**
 	 * Request-level cache of the merged settings.
 	 *
@@ -91,7 +98,14 @@ class SPCW_Settings {
 	 * Order statuses to count, always non-empty and limited to real statuses.
 	 */
 	public static function order_statuses(): array {
-		$statuses = (array) self::get( 'order_statuses' );
+		/**
+		 * Filters which order statuses count as sales.
+		 *
+		 * @since 2.0.1
+		 *
+		 * @param string[] $statuses Status slugs with "wc-" prefix, e.g. array( 'wc-completed' ).
+		 */
+		$statuses = (array) apply_filters( 'spcw_order_statuses', (array) self::get( 'order_statuses' ) );
 		if ( function_exists( 'wc_get_order_statuses' ) ) {
 			$statuses = array_values( array_intersect( $statuses, array_keys( wc_get_order_statuses() ) ) );
 		}
@@ -121,6 +135,8 @@ class SPCW_Settings {
 		/**
 		 * Filters the capability required to view and edit profit data.
 		 *
+		 * @since 2.0.0
+		 *
 		 * @param string $capability Default 'manage_woocommerce'.
 		 */
 		return (string) apply_filters( 'spcw_capability', 'manage_woocommerce' );
@@ -138,6 +154,42 @@ class SPCW_Settings {
 	 */
 	public static function bump_cache_version() {
 		update_option( 'spcw_cache_version', self::cache_version() + 1, true );
+		self::purge_stale_transients();
+	}
+
+	/**
+	 * Delete cached months from older cache versions so they don't pile up in
+	 * wp_options until they expire (relevant without a persistent object cache).
+	 * Runs at most once per minute.
+	 */
+	private static function purge_stale_transients() {
+		if ( wp_using_ext_object_cache() || get_transient( 'spcw_purge_lock' ) ) {
+			return;
+		}
+		set_transient( 'spcw_purge_lock', 1, MINUTE_IN_SECONDS );
+
+		global $wpdb;
+		$keep = '_transient_spcw_m_' . self::cache_version() . '_';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- bulk cleanup of this plugin's own transients.
+		$names = $wpdb->get_col(
+			$wpdb->prepare(
+				'SELECT option_name FROM %i WHERE option_name LIKE %s AND option_name NOT LIKE %s LIMIT 1000',
+				$wpdb->options,
+				$wpdb->esc_like( '_transient_spcw_m_' ) . '%',
+				$wpdb->esc_like( $keep ) . '%'
+			)
+		);
+		foreach ( (array) $names as $name ) {
+			delete_transient( substr( $name, strlen( '_transient_' ) ) );
+		}
+	}
+
+	/**
+	 * Whether the current user may change destructive settings (delete data on uninstall).
+	 * Shop Managers can use the plugin, but only site administrators can opt in to data deletion.
+	 */
+	public static function can_manage_data(): bool {
+		return current_user_can( 'manage_options' ) && current_user_can( 'delete_plugins' );
 	}
 
 	/**
@@ -189,7 +241,7 @@ class SPCW_Settings {
 		if ( ! is_numeric( $raw ) ) {
 			return null;
 		}
-		$value = min( round( (float) $raw, 2 ), 9999999999.99 );
+		$value = min( round( (float) $raw, 2 ), self::MAX_AMOUNT );
 		return $negative ? -$value : $value;
 	}
 }

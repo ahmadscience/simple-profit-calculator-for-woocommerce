@@ -166,7 +166,7 @@ uasort(
 					</td>
 					<td><input type="text" name="<?php echo esc_attr( $spcw_field ); ?>[label]" value="<?php echo esc_attr( $spcw_gw['conf']['label'] ); ?>" placeholder="<?php echo esc_attr( $spcw_gw['name'] ); ?>"></td>
 					<td><input type="text" inputmode="decimal" class="small-text" name="<?php echo esc_attr( $spcw_field ); ?>[percent]" value="<?php echo esc_attr( wc_format_localized_decimal( $spcw_gw['conf']['percent'] ) ); ?>"></td>
-					<td><input type="text" inputmode="decimal" class="small-text" name="<?php echo esc_attr( $spcw_field ); ?>[fixed]" value="<?php echo esc_attr( wc_format_localized_decimal( $spcw_gw['conf']['fixed'] ) ); ?>"></td>
+					<td><input type="text" inputmode="decimal" class="small-text" name="<?php echo esc_attr( $spcw_field ); ?>[fixed]" value="<?php echo esc_attr( wc_format_localized_price( wc_format_decimal( $spcw_gw['conf']['fixed'], wc_get_price_decimals() ) ) ); ?>"></td>
 					<td>
 						<?php if ( ! $spcw_gw['installed'] ) : ?>
 							<label><input type="checkbox" name="<?php echo esc_attr( $spcw_field ); ?>[remove]" value="1"> <?php esc_html_e( 'Remove', 'simple-profit-calculator-for-woocommerce' ); ?></label>
@@ -227,7 +227,10 @@ uasort(
 
 		<!-- Data -->
 		<h2><?php esc_html_e( 'Data', 'simple-profit-calculator-for-woocommerce' ); ?></h2>
-		<label><input type="checkbox" name="spcw_delete_on_uninstall" value="1" <?php checked( ! empty( $spcw_settings['delete_on_uninstall'] ) ); ?>> <?php esc_html_e( 'Delete all monthly costs, product cost prices and settings when the plugin is deleted', 'simple-profit-calculator-for-woocommerce' ); ?></label>
+		<label><input type="checkbox" name="spcw_delete_on_uninstall" value="1" <?php checked( ! empty( $spcw_settings['delete_on_uninstall'] ) ); ?> <?php disabled( ! SPCW_Settings::can_manage_data() ); ?>> <?php esc_html_e( 'Delete all monthly costs, product cost prices and settings when the plugin is deleted', 'simple-profit-calculator-for-woocommerce' ); ?></label>
+		<?php if ( ! SPCW_Settings::can_manage_data() ) : ?>
+			<p class="description"><?php esc_html_e( 'Only site administrators can change this setting.', 'simple-profit-calculator-for-woocommerce' ); ?></p>
+		<?php endif; ?>
 
 		<?php submit_button( __( 'Save settings', 'simple-profit-calculator-for-woocommerce' ) ); ?>
 	</form>

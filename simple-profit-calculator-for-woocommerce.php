@@ -3,7 +3,7 @@
  * Plugin Name:          Simple Profit Calculator for WooCommerce
  * Plugin URI:           https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce
  * Description:          See your real monthly and yearly profit. Combines WooCommerce sales with product costs (from WooCommerce, popular Cost of Goods plugins, its own cost field, a monthly lump sum or a percentage), payment fees and your own monthly expenses.
- * Version:              2.0.0
+ * Version:              2.0.1
  * Requires at least:    6.3
  * Requires PHP:         7.4
  * Requires Plugins:     woocommerce
@@ -20,7 +20,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SPCW_VERSION', '2.0.0' );
+define( 'SPCW_VERSION', '2.0.1' );
 define( 'SPCW_FILE', __FILE__ );
 define( 'SPCW_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SPCW_URL', plugin_dir_url( __FILE__ ) );

@@ -39,10 +39,35 @@ class SPCW_Migration {
 		if ( get_option( self::FLAG ) || ! did_action( 'woocommerce_loaded' ) ) {
 			return;
 		}
+		// admin_init also fires for logged-out admin-ajax/admin-post requests: only
+		// run for a user who could use the plugin anyway.
+		if ( wp_doing_ajax() || ! current_user_can( SPCW_Settings::capability() ) ) {
+			return;
+		}
 		update_option( self::FLAG, time(), false );
 
+		// The v1 option and table names are generic. Only import when the table
+		// has the exact v1 structure, so data from another plugin is never touched.
+		if ( ! self::v1_table_present() ) {
+			return;
+		}
 		self::migrate_settings();
 		self::migrate_table();
+	}
+
+	/**
+	 * Whether the v1 table exists with the v1 columns.
+	 */
+	private static function v1_table_present(): bool {
+		global $wpdb;
+		$table = $wpdb->prefix . 'profit_monthly_data';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( $table !== $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) ) ) {
+			return false;
+		}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$columns = (array) $wpdb->get_col( $wpdb->prepare( 'SHOW COLUMNS FROM %i', $table ) );
+		return ! array_diff( array( 'year', 'month', 'postal_cost', 'ads_spend', 'notes' ), $columns );
 	}
 
 	/**
@@ -61,7 +86,7 @@ class SPCW_Migration {
 			if ( ! empty( $old['order_statuses'] ) && is_array( $old['order_statuses'] ) ) {
 				$settings['order_statuses'] = array_map( 'sanitize_text_field', $old['order_statuses'] );
 			}
-			$key = isset( $old['cost_meta_key'] ) ? sanitize_text_field( $old['cost_meta_key'] ) : '';
+			$key = isset( $old['cost_meta_key'] ) && is_string( $old['cost_meta_key'] ) ? preg_replace( '/[^A-Za-z0-9_\-]/', '', $old['cost_meta_key'] ) : '';
 			$src = array_search( $key, SPCW_Cogs::META_KEYS, true );
 			if ( false !== $src ) {
 				$settings['cogs_source'] = $src;
@@ -76,14 +101,14 @@ class SPCW_Migration {
 			if ( function_exists( 'WC' ) && WC()->payment_gateways() ) {
 				$registered = array_keys( WC()->payment_gateways()->payment_gateways() );
 			}
-			foreach ( $fee as $old_id => $conf ) {
+			foreach ( array_slice( $fee, 0, SPCW_Settings::MAX_GATEWAYS, true ) as $old_id => $conf ) {
 				$old_id = sanitize_key( $old_id );
-				if ( '' === $old_id || ! is_array( $conf ) ) {
+				if ( '' === $old_id || ! is_array( $conf ) || ! isset( $conf['fee'] ) || ! is_numeric( $conf['fee'] ) ) {
 					continue;
 				}
 				$entry = array(
 					'label'   => sanitize_text_field( $conf['label'] ?? '' ),
-					'percent' => (float) ( $conf['fee'] ?? 0 ),
+					'percent' => min( 100, max( 0, (float) $conf['fee'] ) ),
 					'fixed'   => 0.0,
 				);
 				// v1 used substring matching ("klarna" for "klarna_payments"); v2 uses exact ids.

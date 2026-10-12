@@ -29,6 +29,8 @@ class SPCW_Plugin {
 	public static function declare_wc_compatibility() {
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', SPCW_FILE, true );
+			// Admin-only plugin: it doesn't touch the cart or checkout.
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', SPCW_FILE, true );
 		}
 	}
 

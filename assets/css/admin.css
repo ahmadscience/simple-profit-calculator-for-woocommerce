@@ -59,7 +59,9 @@ form.spcw-period { margin-bottom: 12px; }
 .spcw-scroll { overflow-x: auto; }
 
 /* Year table */
-.spcw-year th, .spcw-year td { padding: 8px 10px; }
+.spcw-year th, .spcw-year td { padding: 8px 6px; font-size: 13px; }
+.spcw-year thead th { white-space: normal; vertical-align: bottom; line-height: 1.3; min-width: 64px; }
+.spcw-year tbody th, .spcw-year tfoot th { white-space: nowrap; }
 .spcw-year tfoot th, .spcw-year tfoot td { font-weight: 600; border-top: 2px solid #c3c4c7; }
 
 /* Monthly costs table */

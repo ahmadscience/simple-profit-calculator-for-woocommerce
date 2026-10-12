@@ -259,14 +259,14 @@ class SPCW_Admin {
 		$rows     = (array) self::posted( 'spcw_gw', array() );
 		foreach ( $rows as $id => $row ) {
 			$id = self::sanitize_gateway_id( $id );
-			if ( '' === $id || ! is_array( $row ) || ! empty( $row['remove'] ) ) {
+			if ( '' === $id || ! is_array( $row ) || ! empty( $row['remove'] ) || count( $gateways ) >= SPCW_Settings::MAX_GATEWAYS ) {
 				continue;
 			}
 			$gateways[ $id ] = self::sanitize_gateway_row( $row );
 		}
 		$new_row = (array) self::posted( 'spcw_gw_new', array() );
 		$new_id  = isset( $new_row['id'] ) ? self::sanitize_gateway_id( $new_row['id'] ) : '';
-		if ( '' !== $new_id && ! isset( $gateways[ $new_id ] ) ) {
+		if ( '' !== $new_id && ! isset( $gateways[ $new_id ] ) && count( $gateways ) < SPCW_Settings::MAX_GATEWAYS ) {
 			$gateways[ $new_id ] = self::sanitize_gateway_row( $new_row );
 		}
 		$settings['gateways'] = $gateways;
@@ -280,16 +280,18 @@ class SPCW_Admin {
 				continue;
 			}
 			$label = isset( $row['label'] ) ? (string) $row['label'] : '';
-			if ( SPCW_Settings::SHIPPING_CATEGORY !== $key && ( ! empty( $row['remove'] ) || '' === $label ) ) {
+			if ( SPCW_Settings::SHIPPING_CATEGORY !== $key && ( ! empty( $row['remove'] ) || '' === $label || count( $categories ) >= SPCW_Settings::MAX_CATEGORIES ) ) {
 				continue;
 			}
-			$categories[ $key ] = '' !== $label ? substr( $label, 0, 60 ) : __( 'Shipping / postage', 'simple-profit-calculator-for-woocommerce' );
+			$categories[ $key ] = '' !== $label ? mb_substr( $label, 0, SPCW_Settings::MAX_LABEL_CHARS ) : __( 'Shipping / postage', 'simple-profit-calculator-for-woocommerce' );
 		}
 		$new_labels = (array) self::posted( 'spcw_cat_new', array() );
+		// mbstring is optional in WordPress; WordPress only polyfills mb_substr().
+		$lower = function_exists( 'mb_strtolower' ) ? 'mb_strtolower' : 'strtolower';
 		foreach ( $new_labels as $label ) {
-			$label    = substr( (string) $label, 0, 60 );
-			$existing = array_map( 'strtolower', $categories );
-			if ( '' === $label || in_array( strtolower( $label ), $existing, true ) ) {
+			$label    = mb_substr( (string) $label, 0, SPCW_Settings::MAX_LABEL_CHARS );
+			$existing = array_map( $lower, $categories );
+			if ( '' === $label || in_array( $lower( $label ), $existing, true ) || count( $categories ) >= SPCW_Settings::MAX_CATEGORIES ) {
 				continue; // Empty, or a type with this name already exists.
 			}
 			$base = trim( sanitize_key( str_replace( ' ', '_', remove_accents( $label ) ) ), '_' );
@@ -305,7 +307,10 @@ class SPCW_Admin {
 		}
 		$settings['categories'] = $categories;
 
-		$settings['delete_on_uninstall'] = '' !== (string) self::posted( 'spcw_delete_on_uninstall' );
+		// Only administrators may opt in to deleting data; Shop Managers keep the current value.
+		if ( SPCW_Settings::can_manage_data() ) {
+			$settings['delete_on_uninstall'] = '' !== (string) self::posted( 'spcw_delete_on_uninstall' );
+		}
 
 		SPCW_Settings::save( $settings );
 		SPCW_Settings::bump_cache_version();
@@ -371,6 +376,7 @@ class SPCW_Admin {
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename="profit-' . $year . '.csv"' );
+		header( 'X-Content-Type-Options: nosniff' );
 		$out = fopen( 'php://output', 'w' );
 		fwrite( $out, "\xEF\xBB\xBF" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- UTF-8 BOM so Excel reads æøå correctly.
 		foreach ( $rows as $row ) {
@@ -404,13 +410,22 @@ class SPCW_Admin {
 	}
 
 	/**
-	 * Stop spreadsheet formula injection in text cells.
+	 * Stop spreadsheet formula injection (CSV injection) in text cells.
+	 *
+	 * Spreadsheet apps treat cells starting with = + - @ (also after leading
+	 * whitespace, tabs or line breaks) as formulas. Such cells get a leading
+	 * apostrophe, which spreadsheets display as plain text. Real numbers are
+	 * left alone so they stay numeric.
 	 *
 	 * @param mixed $cell Cell value.
 	 */
 	public static function csv_safe( $cell ) {
 		$cell = (string) $cell;
-		if ( '' !== $cell && ! is_numeric( $cell ) && in_array( $cell[0], array( '=', '+', '-', '@', "\t", "\r" ), true ) ) {
+		if ( '' === $cell || is_numeric( $cell ) ) {
+			return $cell;
+		}
+		$first = substr( ltrim( $cell, " \t\r\n\0\x0B" ), 0, 1 );
+		if ( in_array( $first, array( '=', '+', '-', '@', '|', '%' ), true ) || in_array( $cell[0], array( "\t", "\r", "\n" ), true ) ) {
 			return "'" . $cell;
 		}
 		return $cell;
@@ -516,7 +531,7 @@ class SPCW_Admin {
 	 */
 	private static function sanitize_gateway_row( array $row ): array {
 		return array(
-			'label'   => isset( $row['label'] ) ? substr( sanitize_text_field( (string) $row['label'] ), 0, 60 ) : '',
+			'label'   => isset( $row['label'] ) ? mb_substr( sanitize_text_field( (string) $row['label'] ), 0, SPCW_Settings::MAX_LABEL_CHARS ) : '',
 			'percent' => min( 100, max( 0, (float) SPCW_Settings::parse_amount( $row['percent'] ?? '' ) ) ),
 			'fixed'   => max( 0, (float) SPCW_Settings::parse_amount( $row['fixed'] ?? '' ) ),
 		);

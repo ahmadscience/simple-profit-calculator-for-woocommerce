@@ -2,3 +2,7 @@
 *.zip
 vendor/
 node_modules/
+tests/results.txt
+tests/*.tmp.json
+tests/blueprint.ci.json
+dist/

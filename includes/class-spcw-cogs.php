@@ -126,13 +126,24 @@ class SPCW_Cogs {
 	 * @param WC_Product $product Product or variation.
 	 */
 	public static function unit_cost( WC_Product $product ) {
+		$cost = null;
 		foreach ( self::active_sources() as $source ) {
 			$cost = self::cost_from_source( $product, $source );
 			if ( null !== $cost ) {
-				return $cost;
+				break;
 			}
 		}
-		return null;
+		/**
+		 * Filters the per-unit cost (excl. VAT) used for a product or variation.
+		 * Return null for "no cost price known".
+		 *
+		 * @since 2.0.1
+		 *
+		 * @param float|null $cost    Cost found by the plugin, or null.
+		 * @param WC_Product $product Product or variation.
+		 */
+		$cost = apply_filters( 'spcw_product_unit_cost', $cost, $product );
+		return is_numeric( $cost ) ? max( 0.0, (float) $cost ) : null;
 	}
 
 	/**

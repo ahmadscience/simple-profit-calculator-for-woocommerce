@@ -135,12 +135,14 @@ class SPCW_Orders {
 		$result = self::empty_month();
 		$cogs   = SPCW_Settings::COGS_PRODUCT === SPCW_Settings::get( 'cogs_mode' );
 
-		foreach ( self::order_ids( $year, $month ) as $order_id ) {
+		foreach ( self::order_ids( $year, $month ) as $i => $order_id ) {
 			$order = wc_get_order( $order_id );
-			if ( ! $order instanceof WC_Order || $order instanceof WC_Order_Refund ) {
-				continue;
+			if ( $order instanceof WC_Order && ! $order instanceof WC_Order_Refund ) {
+				self::add_order( $result, $order, $cogs );
 			}
-			self::add_order( $result, $order, $cogs );
+			if ( 0 === ( $i + 1 ) % 200 ) {
+				self::free_memory();
+			}
 		}
 
 		foreach ( array( 'gross', 'refunds', 'tax', 'shipping', 'cogs' ) as $k ) {
@@ -249,6 +251,17 @@ class SPCW_Orders {
 			)
 		);
 		return is_array( $query->posts ) ? array_map( 'intval', $query->posts ) : array();
+	}
+
+	/**
+	 * Large stores: drop WordPress's in-memory object cache when memory usage
+	 * gets high, so aggregating thousands of orders doesn't hit memory_limit.
+	 */
+	private static function free_memory() {
+		$limit = wp_convert_hr_to_bytes( (string) ini_get( 'memory_limit' ) );
+		if ( $limit > 0 && memory_get_usage() > $limit * 0.6 && function_exists( 'wp_cache_flush_runtime' ) ) {
+			wp_cache_flush_runtime();
+		}
 	}
 
 	/**

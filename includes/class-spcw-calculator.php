@@ -76,7 +76,7 @@ class SPCW_Calculator {
 		$total_costs = round( $cogs + $fees_total + $expenses_total, 2 );
 		$profit      = round( $net_sales - $total_costs, 2 );
 
-		return array(
+		$result = array(
 			'order_count'        => (int) $sales['order_count'],
 			'gross'              => (float) $sales['gross'],
 			'refunds'            => (float) $sales['refunds'],
@@ -94,6 +94,18 @@ class SPCW_Calculator {
 			'margin'             => self::margin( $profit, $net_sales ),
 			'notes'              => $manual['notes'],
 		);
+
+		/**
+		 * Filters the calculated figures for one month (also used for the yearly totals and CSV).
+		 * If you change amounts, keep 'total_costs', 'profit' and 'margin' consistent.
+		 *
+		 * @since 2.0.1
+		 *
+		 * @param array $result Figures, see SPCW_Calculator::month().
+		 * @param int   $year   Year.
+		 * @param int   $month  Month 1-12.
+		 */
+		return (array) apply_filters( 'spcw_month_result', $result, $year, $month );
 	}
 
 	/**

@@ -19,7 +19,8 @@ Thanks for helping! Bug reports, feature ideas and pull requests are welcome.
    - Prefix everything with `spcw_` / `SPCW_`.
    - All user-facing text is translatable with the text domain `simple-profit-calculator-for-woocommerce`.
    - No external requests, no tracking.
-4. Describe how you tested the change (WordPress/WooCommerce/PHP versions, HPOS on/off).
+4. Add or update tests in `tests/run-tests.php` and run them (see the [developer guide](docs/developer.md#testing)).
+5. Describe how you tested the change (WordPress/WooCommerce/PHP versions, HPOS on/off). The PR template has a checklist.
 
 ## Project layout
 
@@ -28,4 +29,6 @@ simple-profit-calculator-for-woocommerce.php   main plugin file
 includes/   settings, database, product cost, order data, calculator, v1 migration
 admin/      admin controller and views
 assets/     admin CSS and JS (no build step)
+tests/      integration tests (WordPress Playground)
+docs/       user, developer and security documentation
 ```

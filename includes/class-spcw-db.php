@@ -141,21 +141,30 @@ class SPCW_DB {
 			return false !== $wpdb->delete( $table, $where, array( '%d', '%d' ) );
 		}
 
-		$data = array(
-			'costs'      => wp_json_encode( $costs ),
-			'notes'      => $notes,
-			'updated_at' => current_time( 'mysql', true ),
+		$costs = array_map(
+			function ( $v ) {
+				return max( -SPCW_Settings::MAX_AMOUNT, min( SPCW_Settings::MAX_AMOUNT, round( (float) $v, 2 ) ) );
+			},
+			$costs
 		);
+		$notes = mb_substr( $notes, 0, SPCW_Settings::MAX_NOTE_CHARS );
 
+		// Single atomic upsert on the (period_year, period_month) unique key, so two
+		// simultaneous saves can't collide.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- custom table.
-		$exists = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM %i WHERE period_year = %d AND period_month = %d', $table, $year, $month ) );
-
-		if ( $exists ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			return false !== $wpdb->update( $table, $data, $where, array( '%s', '%s', '%s' ), array( '%d', '%d' ) );
-		}
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		return false !== $wpdb->insert( $table, array_merge( $where, $data ), array( '%d', '%d', '%s', '%s', '%s' ) );
+		$result = $wpdb->query(
+			$wpdb->prepare(
+				'INSERT INTO %i (period_year, period_month, costs, notes, updated_at) VALUES (%d, %d, %s, %s, %s)
+				ON DUPLICATE KEY UPDATE costs = VALUES(costs), notes = VALUES(notes), updated_at = VALUES(updated_at)',
+				$table,
+				$year,
+				$month,
+				wp_json_encode( $costs ),
+				$notes,
+				current_time( 'mysql', true )
+			)
+		);
+		return false !== $result;
 	}
 
 	/**
