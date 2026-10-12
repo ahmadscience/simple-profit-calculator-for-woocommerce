@@ -1,0 +1,61 @@
+name: 🐞 Bug report
+description: Something isn't working or a number looks wrong.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! **Security problems must not be reported here.** Please use [a private security advisory](https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/security/advisories/new).
+        Don't include customer data, order details or passwords.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to Profit → Monthly costs
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin version
+      placeholder: "2.0.0"
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: WordPress / WooCommerce / PHP versions
+      placeholder: "WP 7.1, WC 11.2, PHP 8.3"
+    validations:
+      required: true
+  - type: dropdown
+    id: hpos
+    attributes:
+      label: Order storage
+      description: WooCommerce → Settings → Advanced → Features. Also shown under Profit → Settings → System status.
+      options:
+        - High-performance order storage (HPOS)
+        - WordPress posts (legacy)
+        - Don't know
+  - type: dropdown
+    id: cogs
+    attributes:
+      label: Product cost method
+      options:
+        - Cost price per product
+        - One amount per month
+        - Percentage of sales
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errors or screenshots
+      description: PHP errors from debug.log, browser console errors, or screenshots (remove private data).

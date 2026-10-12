@@ -1,0 +1,90 @@
+/* Simple Profit Calculator – admin styles. Follows WordPress admin colours. */
+
+.spcw-wrap { max-width: 1280px; }
+.spcw-intro { font-size: 14px; max-width: 820px; }
+
+/* Toolbar */
+.spcw-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
+.spcw-toolbar-actions { display: flex; gap: 8px; margin-left: auto; }
+.spcw-toolbar-actions form { margin: 0; }
+.spcw-tabs { display: inline-flex; border: 1px solid #c3c4c7; border-radius: 4px; overflow: hidden; background: #fff; }
+.spcw-tab { padding: 5px 16px; text-decoration: none; color: #2c3338; border-right: 1px solid #c3c4c7; }
+.spcw-tab:last-child { border-right: 0; }
+.spcw-tab:hover, .spcw-tab:focus { background: #f0f0f1; color: #2c3338; }
+.spcw-tab.is-active { background: #2271b1; color: #fff; }
+.spcw-period { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+form.spcw-period { margin-bottom: 12px; }
+.spcw-toolbar form.spcw-period { margin-bottom: 0; }
+
+.spcw-period-title { display: flex; align-items: center; gap: 10px; font-size: 1.4em; margin: 8px 0 4px; }
+.spcw-pill { background: #f0f0f1; color: #50575e; border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 400; }
+
+/* Cards */
+.spcw-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+.spcw-card { background: #fff; border: 1px solid #c3c4c7; border-left: 4px solid #2271b1; border-radius: 4px; padding: 14px 16px; }
+.spcw-card--costs { border-left-color: #996800; }
+.spcw-card--profit { border-left-color: #00a32a; }
+.spcw-card--loss { border-left-color: #d63638; }
+.spcw-card-label { font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: #646970; }
+.spcw-card-value { font-size: 1.7em; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.spcw-card--profit .spcw-card-value { color: #007017; }
+.spcw-card--loss .spcw-card-value { color: #b32d2e; }
+.spcw-card-sub { font-size: 12px; color: #646970; margin-top: 2px; }
+
+/* Monthly layout */
+.spcw-columns { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 960px) { .spcw-columns { grid-template-columns: 1fr; } }
+
+.spcw-num { text-align: right !important; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.spcw-neg { color: #b32d2e; }
+.spcw-pos { color: #007017; }
+.spcw-muted, .spcw-muted a { color: #8c8f94; }
+
+.spcw-breakdown td { padding: 9px 12px; vertical-align: top; }
+.spcw-breakdown .spcw-section th { background: #f6f7f7; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #50575e; padding: 8px 12px; }
+.spcw-breakdown .spcw-subtotal td { border-top: 1px solid #c3c4c7; font-weight: 600; }
+.spcw-breakdown .spcw-result td { font-size: 1.15em; font-weight: 700; border-top: 2px solid #c3c4c7; }
+.spcw-breakdown .spcw-result.is-profit td { background: #edfaef; color: #007017; }
+.spcw-breakdown .spcw-result.is-loss td { background: #fcf0f1; color: #b32d2e; }
+.spcw-fee-list { margin: 4px 0 0 0; font-size: 12px; color: #50575e; }
+.spcw-fee-list li { margin: 0; }
+
+.spcw-panel { background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 4px 16px 12px; }
+.spcw-panel h3 { font-size: 14px; }
+.spcw-panel label { display: block; font-weight: 600; margin-bottom: 2px; }
+.spcw-panel input[type="text"], .spcw-panel textarea { width: 100%; }
+.spcw-panel-actions { display: flex; align-items: center; gap: 12px; }
+
+/* Tables that may be wider than the screen */
+.spcw-scroll { overflow-x: auto; }
+
+/* Year table */
+.spcw-year th, .spcw-year td { padding: 8px 10px; }
+.spcw-year tfoot th, .spcw-year tfoot td { font-weight: 600; border-top: 2px solid #c3c4c7; }
+
+/* Monthly costs table */
+.spcw-costs th, .spcw-costs td { padding: 6px 6px; vertical-align: middle; }
+.spcw-costs thead th { font-weight: 600; font-size: 12px; line-height: 1.3; }
+.spcw-costs .spcw-amount { width: 100%; min-width: 72px; max-width: 110px; text-align: right; font-variant-numeric: tabular-nums; }
+.spcw-costs .spcw-note { width: 100%; min-width: 120px; }
+.spcw-costs .spcw-copy-prev { white-space: nowrap; font-size: 12px; }
+.spcw-costs tr.is-current { background: #fcf9e8; }
+.spcw-costs tr.is-future th { color: #8c8f94; }
+.spcw-costs .spcw-row-total { font-weight: 600; min-width: 80px; }
+.spcw-savebar { position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 12px 0; background: #f0f0f1; z-index: 2; }
+.spcw-dirty-hint { color: #996800; font-weight: 600; }
+
+/* Settings */
+.spcw-settings h2 { margin-top: 32px; }
+.spcw-choices { max-width: 820px; }
+.spcw-choice { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; margin: 6px 0; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; cursor: pointer; }
+.spcw-choice input { margin-top: 3px; }
+.spcw-choice .description { display: block; margin-top: 2px; }
+.spcw-choice-detail { margin: 0 0 12px 36px; }
+.spcw-fees, .spcw-cats { max-width: 980px; }
+.spcw-fees td, .spcw-cats td { vertical-align: middle; }
+.spcw-new-row td { background: #f6f7f7; }
+.spcw-statuses label { display: inline-block; margin: 0 16px 6px 0; }
+.spcw-status { max-width: 640px; }
+.spcw-status th { width: 220px; }
+#spcw-cogs-source { min-width: 380px; max-width: 100%; }
