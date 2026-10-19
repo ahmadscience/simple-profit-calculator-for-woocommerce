@@ -4,7 +4,7 @@ Tags: woocommerce, profit, cost of goods, reports, accounting
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,10 @@ It is kept unless you tick "Delete all … when the plugin is deleted" under Set
 
 == Changelog ==
 
+= 2.0.2 =
+* Code quality: passes the WordPress Coding Standards at the strictest level (every error and warning severity) and the official Plugin Check including experimental checks.
+* No functional changes.
+
 = 2.0.1 =
 * Security: only administrators can enable "delete data on uninstall" (Shop Managers could before).
 * Security: the one-time import from version 1 now only runs when the version 1 table is really present, and only for logged-in users who can use the plugin.
@@ -132,6 +136,9 @@ It is kept unless you tick "Delete all … when the plugin is deleted" under Set
 * Data from version 1 ("Profit Calculator") is imported automatically.
 
 == Upgrade Notice ==
+
+= 2.0.2 =
+Code-quality release, no functional changes.
 
 = 2.0.1 =
 Security hardening. Recommended for all users.

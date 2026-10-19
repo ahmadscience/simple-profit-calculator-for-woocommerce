@@ -2,6 +2,20 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [2.0.2] - 2026-10-19
+
+Code-quality release. **No functional changes.**
+
+### Changed
+- Passes the WordPress Coding Standards (WPCS 3.4) at the strictest level: every error and warning severity, all files including tests.
+- Places where the capability comes from the filterable `spcw_capability` setting are annotated, so static analysis can't mistake them for a missing permission check.
+- Test suite brought up to the WordPress standard (docblocks, prepared SQL, escaping).
+
+### CI
+- PHPCS runs at `--error-severity=1 --warning-severity=1`.
+- Plugin Check runs in strict mode with experimental checks.
+- Plugin Check tooling is only installed from npm releases at least 7 days old, which guards against half-published or compromised packages.
+
 ## [2.0.1] - 2026-10-12
 
 Security hardening after an in-depth review. Recommended for all users. Details: [docs/security.md](docs/security.md#audit-log).
@@ -50,5 +64,6 @@ First public release, a complete rewrite of the private "Profit Calculator" 1.x.
 - Removed a diagnostics page that reset PHP OPcache server-wide, enabled `display_errors` and overwrote settings.
 - All input validated and sanitised, all output escaped, nonces and capability checks on every action.
 
+[2.0.2]: https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/ahmadscience/simple-profit-calculator-for-woocommerce/releases/tag/v2.0.0
