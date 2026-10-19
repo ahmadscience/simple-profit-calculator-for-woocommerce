@@ -78,8 +78,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Only use npm packages published at least 7 days ago
         # Protects against half-published or compromised fresh releases of the tooling
-        # Plugin Check installs (wp-env / Playground).
-        run: echo "NPM_CONFIG_BEFORE=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+        # Plugin Check installs (wp-env / Playground). Midnight cutoff so a release
+        # published over several minutes is never split.
+        run: echo "NPM_CONFIG_BEFORE=$(date -u -d '7 days ago' +%Y-%m-%dT00:00:00Z)" >> "$GITHUB_ENV"
       - name: Build the distributable plugin (same files as the release zip)
         run: |
           mkdir -p dist/simple-profit-calculator-for-woocommerce
