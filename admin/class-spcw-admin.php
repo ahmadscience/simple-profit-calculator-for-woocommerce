@@ -44,6 +44,7 @@ class SPCW_Admin {
 	public static function register_menu() {
 		$cap = SPCW_Settings::capability();
 
+		// phpcs:disable WordPress.WP.Capabilities.Undetermined -- capability comes from SPCW_Settings::capability(): 'manage_woocommerce', filterable via spcw_capability.
 		self::$hooks[] = add_menu_page(
 			__( 'Profit Calculator', 'simple-profit-calculator-for-woocommerce' ),
 			__( 'Profit', 'simple-profit-calculator-for-woocommerce' ),
@@ -56,6 +57,7 @@ class SPCW_Admin {
 		self::$hooks[] = add_submenu_page( self::SLUG_DASHBOARD, __( 'Profit dashboard', 'simple-profit-calculator-for-woocommerce' ), __( 'Dashboard', 'simple-profit-calculator-for-woocommerce' ), $cap, self::SLUG_DASHBOARD, array( __CLASS__, 'page_dashboard' ) );
 		self::$hooks[] = add_submenu_page( self::SLUG_DASHBOARD, __( 'Monthly costs', 'simple-profit-calculator-for-woocommerce' ), __( 'Monthly costs', 'simple-profit-calculator-for-woocommerce' ), $cap, self::SLUG_COSTS, array( __CLASS__, 'page_costs' ) );
 		self::$hooks[] = add_submenu_page( self::SLUG_DASHBOARD, __( 'Profit settings', 'simple-profit-calculator-for-woocommerce' ), __( 'Settings', 'simple-profit-calculator-for-woocommerce' ), $cap, self::SLUG_SETTINGS, array( __CLASS__, 'page_settings' ) );
+		// phpcs:enable WordPress.WP.Capabilities.Undetermined
 	}
 
 	/**
@@ -119,6 +121,7 @@ class SPCW_Admin {
 	 * @param string $view View name.
 	 */
 	private static function render( string $view ) {
+		// phpcs:ignore WordPress.WP.Capabilities.Undetermined -- capability comes from SPCW_Settings::capability(): 'manage_woocommerce', filterable via spcw_capability.
 		if ( ! current_user_can( SPCW_Settings::capability() ) ) {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'simple-profit-calculator-for-woocommerce' ) );
 		}
@@ -149,6 +152,7 @@ class SPCW_Admin {
 	 * Stop users without the capability. Each handler also checks its nonce.
 	 */
 	private static function check_capability() {
+		// phpcs:ignore WordPress.WP.Capabilities.Undetermined -- capability comes from SPCW_Settings::capability(): 'manage_woocommerce', filterable via spcw_capability.
 		if ( ! current_user_can( SPCW_Settings::capability() ) ) {
 			wp_die( esc_html__( 'You do not have permission to do this.', 'simple-profit-calculator-for-woocommerce' ), 403 );
 		}

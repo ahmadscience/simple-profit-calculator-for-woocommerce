@@ -5,18 +5,49 @@
  * @package SimpleProfitCalculator
  */
 
+/** Load WordPress (Playground path). */
 require_once '/wordpress/wp-load.php';
 global $wpdb;
 
 // v1 ("Profit Calculator") data, to test the one-time import.
 $spcw_t = $wpdb->prefix . 'profit_monthly_data';
-$wpdb->query( "CREATE TABLE IF NOT EXISTS `$spcw_t` (`id` bigint(20) NOT NULL AUTO_INCREMENT,`year` smallint(4) NOT NULL,`month` tinyint(2) NOT NULL,`postal_cost` decimal(12,2) NOT NULL DEFAULT 0.00,`ads_spend` decimal(12,2) NOT NULL DEFAULT 0.00,`accountant_cost` decimal(12,2) NOT NULL DEFAULT 0.00,`packing_cost` decimal(12,2) NOT NULL DEFAULT 0.00,`saas_cost` decimal(12,2) NOT NULL DEFAULT 0.00,`notes` text,`updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`), UNIQUE KEY `year_month` (`year`,`month`))" );
-$wpdb->query( "INSERT INTO `$spcw_t` (`year`,`month`,postal_cost,ads_spend,accountant_cost,packing_cost,saas_cost,notes) VALUES (2026,9,450.00,1200.00,0,80,299,'Sept legacy'),(2026,8,300,500,1500,0,299,'')" );
-update_option( 'pc_settings', array( 'vat_rate' => 25, 'cost_meta_key' => '_alg_wc_cog_cost', 'order_statuses' => array( 'wc-completed', 'wc-processing' ) ) );
-update_option( 'pc_gateway_fees', array( 'bacs' => array( 'label' => 'Bank', 'fee' => 0 ), 'cheque' => array( 'label' => 'Cheque legacy', 'fee' => 2.5 ), 'stripe' => array( 'label' => 'Stripe', 'fee' => 1.4 ) ) );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- test fixture.
+$wpdb->query( $wpdb->prepare( 'CREATE TABLE IF NOT EXISTS %i (`id` bigint(20) NOT NULL AUTO_INCREMENT,`year` smallint(4) NOT NULL,`month` tinyint(2) NOT NULL,`postal_cost` decimal(12,2) NOT NULL DEFAULT 0.00,`ads_spend` decimal(12,2) NOT NULL DEFAULT 0.00,`accountant_cost` decimal(12,2) NOT NULL DEFAULT 0.00,`packing_cost` decimal(12,2) NOT NULL DEFAULT 0.00,`saas_cost` decimal(12,2) NOT NULL DEFAULT 0.00,`notes` text,`updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`), UNIQUE KEY `year_month` (`year`,`month`))', $spcw_t ) );
+// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- test fixture.
+$wpdb->query( $wpdb->prepare( "INSERT INTO %i (`year`,`month`,postal_cost,ads_spend,accountant_cost,packing_cost,saas_cost,notes) VALUES (2026,9,450.00,1200.00,0,80,299,'Sept legacy'),(2026,8,300,500,1500,0,299,'')", $spcw_t ) );
+update_option(
+	'pc_settings',
+	array(
+		'vat_rate'       => 25,
+		'cost_meta_key'  => '_alg_wc_cog_cost',
+		'order_statuses' => array( 'wc-completed', 'wc-processing' ),
+	)
+);
+update_option(
+	'pc_gateway_fees',
+	array(
+		'bacs'   => array(
+			'label' => 'Bank',
+			'fee'   => 0,
+		),
+		'cheque' => array(
+			'label' => 'Cheque legacy',
+			'fee'   => 2.5,
+		),
+		'stripe' => array(
+			'label' => 'Stripe',
+			'fee'   => 1.4,
+		),
+	)
+);
 
 /**
  * Create a simple product.
+ *
+ * @param string $name  Product name.
+ * @param string $price Regular price.
+ * @param array  $meta  Meta to set.
+ * @return int Product id.
  */
 function spcw_test_product( $name, $price, $meta ) {
 	$p = new WC_Product_Simple();
@@ -31,6 +62,14 @@ function spcw_test_product( $name, $price, $meta ) {
 
 /**
  * Create an order with one line.
+ *
+ * @param int    $pid    Product id.
+ * @param int    $qty    Quantity.
+ * @param string $status Order status.
+ * @param string $date   Local creation date.
+ * @param string $pm     Payment method id.
+ * @param string $pmt    Payment method title.
+ * @return WC_Order
  */
 function spcw_test_order( $pid, $qty, $status, $date, $pm, $pmt ) {
 	$o = wc_create_order();
@@ -60,6 +99,11 @@ wc_create_refund(
 	array(
 		'order_id'   => $spcw_o1->get_id(),
 		'amount'     => 125,
-		'line_items' => array( array_key_first( $spcw_items ) => array( 'qty' => 1, 'refund_total' => 125 ) ),
+		'line_items' => array(
+			array_key_first( $spcw_items ) => array(
+				'qty'          => 1,
+				'refund_total' => 125,
+			),
+		),
 	)
 );

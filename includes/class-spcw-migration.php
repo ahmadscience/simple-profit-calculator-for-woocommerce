@@ -41,6 +41,7 @@ class SPCW_Migration {
 		}
 		// admin_init also fires for logged-out admin-ajax/admin-post requests: only
 		// run for a user who could use the plugin anyway.
+		// phpcs:ignore WordPress.WP.Capabilities.Undetermined -- capability comes from SPCW_Settings::capability(): 'manage_woocommerce', filterable via spcw_capability.
 		if ( wp_doing_ajax() || ! current_user_can( SPCW_Settings::capability() ) ) {
 			return;
 		}
